@@ -48,9 +48,9 @@ install_stage=(
     swappy 
     grim 
     slurp 
-    thunar 
+    thunar
+    dolphin 
     btop
-    firefox
     thunderbird
     mpv
     pamixer 
@@ -186,7 +186,7 @@ fi
 #### Check for package manager ####
 if [ ! -f /sbin/yay ]; then  
     echo -en "$CNT - Configuering yay."
-    git clone https://aur.archlinux.org/yay.git &>> $INSTLOG
+    git clone https://aur.archlinux.org/yay-bin.git &>> $INSTLOG
     cd yay
     makepkg -si --noconfirm &>> ../$INSTLOG &
     show_progress $!
@@ -267,6 +267,20 @@ if [[ $INST == "Y" || $INST == "y" ]]; then
     yay -R --noconfirm xdg-desktop-portal-gnome xdg-desktop-portal-gtk &>> $INSTLOG
 fi
 
+    # check for existing config folders and backup 
+    for DIR in hypr kitty mako swaylock waybar wlogout wofi HyprV
+    do 
+        DIRPATH=~/.config/$DIR
+        if [ -d "$DIRPATH" ]; then 
+            echo -e "$CAT - Config for $DIR located, backing up."
+            mv $DIRPATH $DIRPATH-back &>> $INSTLOG
+            echo -e "$COK - Backed up $DIR to $DIRPATH-back."
+        fi
+
+        # make new empty folders
+        mkdir -p $DIRPATH &>> $INSTLOG
+    done
+
 ### Copy Config Files ###
 read -rep $'[\e[1;33mACTION\e[0m] - Would you like to copy config files? (y,n) ' CFG
 if [[ $CFG == "Y" || $CFG == "y" ]]; then
@@ -288,19 +302,19 @@ if [[ $CFG == "Y" || $CFG == "y" ]]; then
     fi
 
     # Setup each appliaction
-    # check for existing config folders and backup 
-    for DIR in hypr kitty mako swaylock waybar wlogout wofi 
-    do 
-        DIRPATH=~/.config/$DIR
-        if [ -d "$DIRPATH" ]; then 
-            echo -e "$CAT - Config for $DIR located, backing up."
-            mv $DIRPATH $DIRPATH-back &>> $INSTLOG
-            echo -e "$COK - Backed up $DIR to $DIRPATH-back."
-        fi
+    # # check for existing config folders and backup 
+    # for DIR in hypr kitty mako swaylock waybar wlogout wofi HyprV
+    # do 
+    #     DIRPATH=~/.config/$DIR
+    #     if [ -d "$DIRPATH" ]; then 
+    #         echo -e "$CAT - Config for $DIR located, backing up."
+    #         mv $DIRPATH $DIRPATH-back &>> $INSTLOG
+    #         echo -e "$COK - Backed up $DIR to $DIRPATH-back."
+    #     fi
 
-        # make new empty folders
-        mkdir -p $DIRPATH &>> $INSTLOG
-    done
+    #     # make new empty folders
+    #     mkdir -p $DIRPATH &>> $INSTLOG
+    # done
 
     # link up the config files
     echo -e "$CNT - Setting up the new config..." 
@@ -356,35 +370,35 @@ if [[ $STAR == "Y" || $STAR == "y" ]]; then
     cp Extras/starship.toml ~/.config/
 fi
 
-### Install software for Asus ROG laptops ###
-read -rep $'[\e[1;33mACTION\e[0m] - For ASUS ROG Laptops - Would you like to install Asus ROG software support? (y,n) ' ROG
-if [[ $ROG == "Y" || $ROG == "y" ]]; then
-    echo -e "$CNT - Adding Keys..."
-    sudo pacman-key --recv-keys 8F654886F17D497FEFE3DB448B15A6B0E9A3FA35 &>> $INSTLOG
-    sudo pacman-key --finger 8F654886F17D497FEFE3DB448B15A6B0E9A3FA35 &>> $INSTLOG
-    sudo pacman-key --lsign-key 8F654886F17D497FEFE3DB448B15A6B0E9A3FA35 &>> $INSTLOG
-    sudo pacman-key --finger 8F654886F17D497FEFE3DB448B15A6B0E9A3FA35 &>> $INSTLOG
+# ### Install software for Asus ROG laptops ###
+# read -rep $'[\e[1;33mACTION\e[0m] - For ASUS ROG Laptops - Would you like to install Asus ROG software support? (y,n) ' ROG
+# if [[ $ROG == "Y" || $ROG == "y" ]]; then
+#     echo -e "$CNT - Adding Keys..."
+#     sudo pacman-key --recv-keys 8F654886F17D497FEFE3DB448B15A6B0E9A3FA35 &>> $INSTLOG
+#     sudo pacman-key --finger 8F654886F17D497FEFE3DB448B15A6B0E9A3FA35 &>> $INSTLOG
+#     sudo pacman-key --lsign-key 8F654886F17D497FEFE3DB448B15A6B0E9A3FA35 &>> $INSTLOG
+#     sudo pacman-key --finger 8F654886F17D497FEFE3DB448B15A6B0E9A3FA35 &>> $INSTLOG
 
-    LOC="/etc/pacman.conf"
-    echo -e "$CNT - Updating $LOC with g14 repo."
-    echo -e "\n[g14]\nServer = https://arch.asus-linux.org" | sudo tee -a $LOC &>> $INSTLOG
-    echo -e "$CNT - Update the system..."
-    sudo pacman -Suy --noconfirm &>> $INSTLOG
+#     LOC="/etc/pacman.conf"
+#     echo -e "$CNT - Updating $LOC with g14 repo."
+#     echo -e "\n[g14]\nServer = https://arch.asus-linux.org" | sudo tee -a $LOC &>> $INSTLOG
+#     echo -e "$CNT - Update the system..."
+#     sudo pacman -Suy --noconfirm &>> $INSTLOG
 
-    echo -e "$CNT - Installing ROG pacakges..."
-    install_software asusctl
-    install_software supergfxctl
-    install_software rog-control-center
+#     echo -e "$CNT - Installing ROG pacakges..."
+#     install_software asusctl
+#     install_software supergfxctl
+#     install_software rog-control-center
 
-    echo -e "$CNT - Activating ROG services..."
-    sudo systemctl enable --now power-profiles-daemon.service &>> $INSTLOG
-    sleep 2
-    sudo systemctl enable --now supergfxd &>> $INSTLOG
-    sleep 2
+#     echo -e "$CNT - Activating ROG services..."
+#     sudo systemctl enable --now power-profiles-daemon.service &>> $INSTLOG
+#     sleep 2
+#     sudo systemctl enable --now supergfxd &>> $INSTLOG
+#     sleep 2
 
-    # add the ROG keybinding file to the config
-    echo -e "\nsource = ~/.config/hypr/rog-g15-strix-2021-binds.conf" >> ~/.config/hypr/hyprland.conf
-fi
+#     # add the ROG keybinding file to the config
+#     echo -e "\nsource = ~/.config/hypr/rog-g15-strix-2021-binds.conf" >> ~/.config/hypr/hyprland.conf
+# fi
 
 ### Script is done ###
 echo -e "$CNT - Script had completed!"
